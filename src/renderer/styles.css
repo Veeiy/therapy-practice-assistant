@@ -1,0 +1,738 @@
+/* A calm, legible desktop style for a non-technical user. No external fonts or
+   assets (CSP allows only self), so we use the system UI font stack. */
+
+:root {
+  --bg: #f5f6f8;
+  --panel: #ffffff;
+  --ink: #1f2733;
+  /* A2: darkened from #6b7480 (~4.4:1, under AA) to #4a525c (7.3:1 on the page
+     background, 7.0:1 on the gray table header). Clears WCAG AA for body text. */
+  --muted: #4a525c;
+  --line: #e2e6ec;
+  --brand: #2f6f6a;
+  --brand-ink: #ffffff;
+  --danger: #b4453c;
+  --warn-bg: #fff6e6;
+  --info-bg: #eaf4f3;
+  --error-bg: #fdecea;
+  --radius: 10px;
+}
+
+* {
+  box-sizing: border-box;
+}
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+/* Keyboard focus indicator (A1). A visible ring on every interactive control so
+   keyboard-only users can always see where they are. The outline plus a light
+   box-shadow halo keeps the ring visible on white panels, the gray page, and the
+   teal active nav item (where a brand-colored outline alone would disappear). */
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+.rail-item:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.9);
+}
+/* On the active (teal) nav item the brand outline matches the background, so swap
+   to a white outline plus a dark halo for a guaranteed-visible ring. */
+.rail-item.active:focus-visible {
+  outline-color: #ffffff;
+  box-shadow: 0 0 0 4px rgba(31, 39, 51, 0.55);
+}
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  color: var(--ink);
+  background: var(--bg);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.loading {
+  display: grid;
+  place-items: center;
+  height: 100%;
+  color: var(--muted);
+}
+
+/* Visually hidden, but available to screen readers. Used for aria-live status
+   regions (A5/A6) that announce async results without changing the visual layout. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ── shell ── */
+.app {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  height: 100%;
+}
+.rail {
+  background: var(--panel);
+  border-right: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  padding: 16px 12px;
+  gap: 4px;
+}
+.rail-title {
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 4px 8px 12px;
+}
+.rail-item {
+  text-align: left;
+  border: 0;
+  background: transparent;
+  padding: 10px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--ink);
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.rail-item:hover {
+  background: #eef1f4;
+}
+.rail-item.active {
+  background: var(--brand);
+  color: var(--brand-ink);
+}
+.rail-spacer {
+  flex: 1;
+}
+.soon {
+  font-size: 11px;
+  background: var(--warn-bg);
+  /* A3: text raised from #8a6d3b (~4.5:1 borderline) to #6b4f1d (7.1:1) and a
+     border added so "soon" is not signalled by color alone. */
+  color: #6b4f1d;
+  border: 1px solid #d8b878;
+  border-radius: 999px;
+  padding: 1px 8px;
+  margin-left: 8px;
+}
+
+.content {
+  overflow: auto;
+  padding: 24px 28px;
+}
+
+/* ── data mode badge ── */
+.mode-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+}
+.mode-badge .dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
+.mode-badge.synthetic {
+  background: var(--info-bg);
+  color: #1f5a55;
+}
+.mode-badge.synthetic .dot {
+  background: var(--brand);
+}
+.mode-badge.real {
+  background: var(--error-bg);
+  color: var(--danger);
+}
+.mode-badge.real .dot {
+  background: var(--danger);
+}
+
+/* ── disclaimer gate ── */
+.gate {
+  display: grid;
+  place-items: center;
+  height: 100%;
+  padding: 24px;
+}
+.gate-card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  max-width: 720px;
+  padding: 28px 32px;
+  box-shadow: 0 6px 30px rgba(31, 39, 51, 0.06);
+}
+.gate-card h1 {
+  margin-top: 0;
+}
+.gate-card section {
+  margin: 16px 0;
+}
+.gate-card h2 {
+  font-size: 15px;
+  margin: 0 0 4px;
+}
+.gate-card p {
+  margin: 0;
+  color: #333b45;
+}
+
+/* ── buttons ── */
+button {
+  font: inherit;
+  cursor: pointer;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  padding: 8px 14px;
+}
+/* B2: disabled buttons get more than dimming, a muted fill, a dashed border, and
+   a not-allowed cursor, so the state is clear without relying on opacity alone. */
+button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  background: #eef0f3;
+  color: #5a6470;
+  border-style: dashed;
+  border-color: #c7ccd3;
+}
+button:disabled.primary {
+  background: #4f7e7a;
+  border-color: #4f7e7a;
+  color: #ffffff;
+}
+/* Show a wait cursor while an async action is in flight (paired with aria-busy). */
+button[aria-busy='true'] {
+  cursor: progress;
+}
+button.primary {
+  background: var(--brand);
+  color: var(--brand-ink);
+  border-color: var(--brand);
+}
+button.danger-outline {
+  color: var(--danger);
+  border-color: #e6c4c1;
+}
+
+/* ── generic screen ── */
+.screen h2 {
+  margin-top: 0;
+}
+.muted {
+  color: var(--muted);
+}
+.banner {
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin: 12px 0;
+}
+.banner.error {
+  background: var(--error-bg);
+  color: var(--danger);
+}
+.banner.info {
+  background: var(--info-bg);
+  color: #1f5a55;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.data-table th,
+.data-table td {
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line);
+}
+.data-table th {
+  background: #f0f2f5;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* ── notes screen ── */
+.notes-screen {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 20px;
+  height: 100%;
+}
+.list-col,
+.editor-col {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 16px;
+  overflow: auto;
+}
+.new-draft {
+  display: grid;
+  gap: 8px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 12px;
+}
+.new-draft label,
+.shorthand label,
+.section {
+  display: grid;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.new-draft select {
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  font: inherit;
+  color: var(--ink);
+}
+.note-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 6px;
+}
+.note-list button {
+  width: 100%;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--line);
+}
+.note-list button.active {
+  border-color: var(--brand);
+}
+.pill {
+  font-size: 11px;
+  border-radius: 999px;
+  padding: 2px 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  /* A3: every pill carries a border so status is conveyed by shape and outline,
+     not color alone. Per-status colors below all clear AA (>=4.5:1). */
+  border: 1px solid currentColor;
+  font-weight: 600;
+}
+.pill.draft {
+  background: var(--warn-bg);
+  color: #6b4f1d;
+  border-color: #b88a3a;
+}
+.pill.signed {
+  background: var(--info-bg);
+  color: #1a4d49;
+  border-color: #4a8f88;
+}
+.editor-head h3 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+/* C4: signed-and-locked banner. Calm info background with a left accent so the
+   rule reads as guidance, not an alarm. Text color clears AA (#1a4d49, 8.5:1). */
+.signed-note {
+  background: var(--info-bg);
+  color: #1a4d49;
+  border: 1px solid #b7dad6;
+  border-left: 4px solid var(--brand);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin: 0 0 8px;
+}
+.shorthand,
+.sections {
+  display: grid;
+  gap: 12px;
+  margin: 12px 0;
+}
+textarea,
+input[type='text'],
+input[type='password'] {
+  font: inherit;
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px 10px;
+  color: var(--ink);
+  resize: vertical;
+}
+/* A2 + B2: disabled field text was #55606c on #f4f5f7 (~2.9:1 per the audit).
+   Darken the text to #3f474f and add a clear non-color disabled treatment
+   (dashed border, not-allowed cursor) so the state does not rely on dimming. */
+textarea:disabled,
+input:disabled,
+select:disabled {
+  background: #eef0f3;
+  color: #3f474f;
+  border-style: dashed;
+  border-color: #c7ccd3;
+  cursor: not-allowed;
+  -webkit-text-fill-color: #3f474f; /* keep readable on WebKit, which dims disabled text */
+  opacity: 1;
+}
+.section-label {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+/* C3: offline / demo-data reassurance shown above the session-summary field. */
+.offline-note {
+  background: var(--info-bg);
+  color: #1a4d49;
+  border: 1px solid #b7dad6;
+  border-radius: 8px;
+  padding: 8px 10px;
+  margin: 0 0 10px;
+  font-size: 13px;
+}
+/* C1/C5: helper text under a label or heading. Uses --muted (AA) and normal
+   weight so it reads as guidance, distinct from the bold label above it. */
+.field-help {
+  display: block;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--muted);
+  margin: 0 0 2px;
+}
+/* C2: one-line plain-language expansion under the Format dropdown. */
+.format-legend {
+  font-size: 12px;
+  color: var(--muted);
+  margin: 2px 0 0;
+}
+.actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+}
+.addenda {
+  margin-top: 18px;
+  border-top: 1px solid var(--line);
+  padding-top: 14px;
+  display: grid;
+  gap: 10px;
+}
+.addendum {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+.empty,
+.soon-card {
+  color: var(--muted);
+  padding: 24px;
+  text-align: center;
+}
+
+/* ── settings ── */
+.settings-screen .card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  margin: 14px 0;
+}
+.settings-screen .row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-top: 8px;
+}
+.settings-screen .row input {
+  flex: 1;
+}
+.coming-soon .soon-card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  max-width: 560px;
+}
+
+/* ── Wave 3 functional screens (intake / scheduling / billing) ── */
+
+/* two-column screens reuse the notes-screen grid feel */
+.intake-screen,
+.billing-screen {
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  gap: 20px;
+  height: 100%;
+}
+.records-col,
+.detail-col {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 16px;
+  overflow: auto;
+}
+.intake-screen section,
+.billing-screen section {
+  margin-bottom: 18px;
+}
+
+/* config-driven SchemaForm */
+.schema-form {
+  display: grid;
+  gap: 12px;
+}
+.schema-field {
+  display: grid;
+  gap: 4px;
+}
+.schema-field .field-label {
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 600;
+}
+.schema-field .req {
+  color: var(--danger);
+}
+.schema-field .field-hint {
+  font-size: 12px;
+  margin: 0;
+}
+/* B1: validation error message tied to its field via aria-describedby. The "!"
+   glyph is a non-color cue so the error is not signalled by color alone. */
+.field-error {
+  font-size: 12px;
+  margin: 2px 0 0;
+  color: var(--danger);
+  font-weight: 600;
+}
+.field-error::before {
+  content: '! ';
+  font-weight: 700;
+}
+/* An invalid control gets a danger-colored border in addition to aria-invalid. */
+.schema-form [aria-invalid='true'] {
+  border-color: var(--danger);
+}
+.schema-field select,
+.new-plan input,
+.new-appt select,
+.new-appt input,
+.new-invoice select,
+.record-payment input {
+  font: inherit;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px 10px;
+  color: var(--ink);
+  width: 100%;
+}
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--ink);
+}
+.checkbox input {
+  width: auto;
+}
+
+/* records view cards */
+.record-card {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin: 8px 0;
+  display: grid;
+  gap: 6px;
+}
+.record-card dl {
+  margin: 0;
+  display: grid;
+  gap: 4px;
+}
+.record-card dt {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 600;
+}
+.record-card dd {
+  margin: 0 0 6px 0;
+}
+.goal-list {
+  margin: 6px 0 0 0;
+  padding-left: 18px;
+}
+.summary {
+  background: var(--info-bg);
+  border-radius: 8px;
+  padding: 8px 10px;
+  margin: 4px 0 0 0;
+}
+.new-plan {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+/* scheduling: full-width single column with stacked sections */
+.schedule-screen {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+}
+.schedule-screen .row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+.schedule-screen .row label {
+  display: grid;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.actions-cell {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+/* reminder preview: the exact, never-sent text */
+.reminder-preview .preview-card {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px;
+  background: var(--panel);
+  display: grid;
+  gap: 6px;
+}
+.reminder-preview .body {
+  font: inherit;
+  white-space: pre-wrap;
+  background: #f7f8fa;
+  border-radius: 8px;
+  padding: 10px;
+  margin: 0;
+}
+.warnings {
+  margin: 0;
+  padding-left: 18px;
+}
+/* A3: reminder-preview warning text raised from #8a6d3b to #6b4f1d (7.1:1 on the
+   white card). The list bullet plus a left accent border keep it distinguishable
+   without relying on color. */
+.warning {
+  color: #6b4f1d;
+  border-left: 3px solid #b88a3a;
+  padding-left: 8px;
+  margin-bottom: 4px;
+}
+
+/* billing detail */
+.new-invoice {
+  display: grid;
+  gap: 8px;
+}
+.new-invoice label,
+.billing-screen .list-col > section label {
+  display: grid;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.invoice-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 6px;
+}
+.invoice-list button {
+  width: 100%;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--line);
+}
+.invoice-list button.active {
+  border-color: var(--brand);
+}
+.provider-header {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+}
+.totals {
+  display: flex;
+  gap: 24px;
+  margin: 12px 0;
+  font-size: 16px;
+}
+.payments {
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+  display: grid;
+  gap: 6px;
+}
+.record-payment {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+/* A3: billing/scheduling pills brought to AA. Amber statuses use #6b4f1d
+   (>=6.7:1 on their backgrounds); teal statuses use #1a4d49 (8.5:1). Each keeps
+   the shared pill border so status is not color-only. */
+.pill.issued {
+  background: var(--warn-bg);
+  color: #6b4f1d;
+  border-color: #b88a3a;
+}
+.pill.partial {
+  background: #fdf0d5;
+  color: #6b4f1d;
+  border-color: #c79a4a;
+}
+.pill.paid {
+  background: var(--info-bg);
+  color: #1a4d49;
+  border-color: #4a8f88;
+}
+.pill.scheduled {
+  background: var(--warn-bg);
+  color: #6b4f1d;
+  border-color: #b88a3a;
+}
+.pill.active {
+  background: var(--info-bg);
+  color: #1a4d49;
+  border-color: #4a8f88;
+}

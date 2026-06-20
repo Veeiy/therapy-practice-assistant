@@ -1,0 +1,56 @@
+# electron-builder configuration.
+# Produces a Windows NSIS one-click installer (win32-x64).
+#
+# IMPORTANT (operator step): the final, distributable, code-signed .exe must be
+# built on a Windows host (or Windows VM / CI). A macOS host cannot Authenticode
+# sign and cross-built native modules (better-sqlite3-multiple-ciphers, the win32
+# Claude binary) are fragile. See OPERATOR-WINDOWS-PACKAGING.md.
+
+appId: com.therapypracticeassistant.app
+productName: Therapy Practice Assistant
+copyright: Copyright (C) 2026
+
+directories:
+  output: release
+  buildResources: resources
+
+files:
+  - dist/**
+  - package.json
+
+# ── F-fix / researcher.2 finding 6: asar-unpack the Claude Agent SDK ──
+# When the app is asar-packed the SDK native binary (claude.exe) is no longer
+# extractable where the SDK expects it. Unpack the whole @anthropic-ai tree so
+# the spawned binary is a real file on disk, then resolve it at runtime by
+# swapping app.asar -> app.asar.unpacked (see src/main/agent/runtime.ts).
+asar: true
+asarUnpack:
+  - "**/node_modules/@anthropic-ai/**"
+  # better-sqlite3-multiple-ciphers ships a native .node addon that also must be
+  # a real file on disk, not packed inside the asar archive.
+  - "**/node_modules/better-sqlite3-multiple-ciphers/**"
+
+# Run the force-win32 step before packaging so the win32-x64 optional dependency
+# of the SDK is present even when packaging from a non-win32 host. npm omits
+# non-host optional deps; without this the Windows app ships with no engine.
+beforeBuild: scripts/force-win32-sdk.cjs
+
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+  # icon: resources/icon.ico   # operator supplies branded icon before release
+  # Authenticode signing is configured by the operator on the Windows build host.
+  # Do NOT embed a certificate or password here.
+
+nsis:
+  oneClick: true
+  perMachine: false
+  allowToChangeInstallationDirectory: false
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  runAfterFinish: true
+
+# Auto-update channel is wired but disabled until the operator hosts a feed.
+publish: null

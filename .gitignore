@@ -1,0 +1,31 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+out/
+release/
+*.tsbuildinfo
+
+# Local runtime data and secrets (never commit PHI or keys)
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+*.sealed
+*.key
+blobs/
+config.json
+firstrun.json
+.env
+.env.*
+
+# Test / coverage
+coverage/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.log
+.idea/
+.vscode/
