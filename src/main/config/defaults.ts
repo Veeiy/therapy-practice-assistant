@@ -18,6 +18,10 @@ export const APP_DEFAULT_CONFIG: Record<string, unknown> = {
     // the data mode the app boots in. 'synthetic' is the only supported mode this
     // build; 'real' requires the operator go-live (BAA + feature gate) first.
     dataMode: 'synthetic',
+    // which compiled modules are hosted and shown (custom buildout). The default
+    // seeds ALL modules, so behavior is identical to before until the companion
+    // setup plugin writes a narrower set. Notes is always kept on regardless.
+    enabledModules: ['notes', 'intake', 'scheduling', 'billing'],
   },
 
   notes: {

@@ -35,6 +35,9 @@ export interface ShellHandlerDeps {
   apiKey: ApiKeyStore;
   firstRun: FirstRunStore;
   host: ModuleHost;
+  /** the sanitized `app.enabledModules` allowlist resolved at boot (custom
+   * buildout). The nav rail advertises only these; notes is always kept. */
+  enabledModules: string[];
   dataMode: () => DataMode;
   /** the live DB key + paths, needed for the F6 backup re-keying. */
   dbKey: Buffer;
@@ -44,7 +47,7 @@ export interface ShellHandlerDeps {
 
 export function registerShellHandlers(router: IpcRouter, deps: ShellHandlerDeps): void {
   // ── shell ──
-  router.handle(CHANNELS.moduleRegistry, () => deps.host.descriptors());
+  router.handle(CHANNELS.moduleRegistry, () => deps.host.enabledDescriptors(deps.enabledModules));
   router.handle(CHANNELS.dataModeGet, () => deps.dataMode());
 
   // ── first-run disclaimer gate ──

@@ -17,6 +17,33 @@ import type { IpcRouter } from '@shared/types/ipc.js';
 
 type Json = Record<string, unknown>;
 
+// ── config-driven enablement (custom buildout) ───────────────────────────────
+// The spine still BUILDS every module at compile time (unchanged), but only
+// HOSTS and ADVERTISES the ones the Practice Profile enabled, via the non-PHI
+// config key `app.enabledModules`. The default keeps all four modules on, so an
+// un-provisioned install behaves exactly like before.
+
+/** Every module id the registry compiles today. Doubles as the safe fallback. */
+export const DEFAULT_ENABLED_MODULES: readonly string[] = [
+  'notes',
+  'intake',
+  'scheduling',
+  'billing',
+];
+
+/**
+ * Sanitize the raw `app.enabledModules` config value into a usable allowlist.
+ * A missing or malformed value (not an array of strings) falls back to ALL
+ * modules, so a corrupt config can only ever widen, never strand the user.
+ * An explicit empty array is honored (the host still keeps notes on).
+ */
+export function resolveEnabledModules(raw: unknown): string[] {
+  if (Array.isArray(raw) && raw.every((x) => typeof x === 'string')) {
+    return [...(raw as string[])];
+  }
+  return [...DEFAULT_ENABLED_MODULES];
+}
+
 function isObject(v: unknown): v is Json {
   return !!v && typeof v === 'object' && !Array.isArray(v);
 }
@@ -50,6 +77,37 @@ export class ModuleHost {
   /** The serializable descriptors the renderer uses to build the nav rail. */
   descriptors(): ModuleDescriptor[] {
     return this.modules.map((m) => ({
+      id: m.id,
+      title: m.title,
+      icon: m.icon,
+      functional: m.functional,
+    }));
+  }
+
+  // ── enablement-filtered views (additive; the methods above are untouched) ──
+
+  /** The modules whose id is in the enabled allowlist. 'notes' is always kept
+   * (the headline workflow is never disabled). */
+  private enabledOnly(enabledIds: string[]): WorkflowModule[] {
+    const allow = new Set(enabledIds);
+    allow.add('notes'); // notes is always on
+    return this.modules.filter((m) => allow.has(m.id));
+  }
+
+  /** Register IPC for the enabled modules only. A disabled module's channels are
+   * never registered, so no code path can reach it. */
+  registerEnabled(router: IpcRouter, enabledIds: string[]): void {
+    for (const m of this.enabledOnly(enabledIds)) {
+      m.registerIpc?.(router);
+    }
+  }
+
+  /** Descriptors for the enabled modules only; the nav rail shows nothing else.
+   * NOTE: mergedDefaultConfig is intentionally NOT filtered. A disabled module's
+   * config defaults staying merged is harmless (nothing reads them while it is
+   * off) and keeps re-enabling a pure data change: write the config key, reboot. */
+  enabledDescriptors(enabledIds: string[]): ModuleDescriptor[] {
+    return this.enabledOnly(enabledIds).map((m) => ({
       id: m.id,
       title: m.title,
       icon: m.icon,

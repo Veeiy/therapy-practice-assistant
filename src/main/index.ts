@@ -35,7 +35,7 @@ import { APP_DEFAULT_CONFIG } from './config/defaults.js';
 import { ApiKeyStore } from './secure/apiKeyStore.js';
 import { AgentRuntime } from './agent/runtime.js';
 import { consoleLogger } from './agent/logger.js';
-import { ModuleHost } from './moduleHost.js';
+import { ModuleHost, resolveEnabledModules } from './moduleHost.js';
 import { MainIpcRouter } from './ipc/router.js';
 import { registerShellHandlers } from './ipc/shellHandlers.js';
 import { FirstRunStore } from './firstRun.js';
@@ -101,15 +101,23 @@ function bootSpine() {
   // first-run disclaimer store (hard rule 3).
   const firstRun = new FirstRunStore(paths.firstRunPath);
 
-  // (8) IPC: one router; modules + shell register onto it.
+  // Custom buildout: the config-driven enablement allowlist. All modules are
+  // still BUILT above (construction + config-defaults merge unchanged); only
+  // hosting (IPC) and advertising (descriptors) are gated by this set. A missing
+  // or malformed value falls back to all modules, so an un-provisioned install
+  // behaves exactly as before. Notes is always kept on by the host itself.
+  const enabledModules = resolveEnabledModules(config.get('app.enabledModules'));
+
+  // (8) IPC: one router; ENABLED modules + shell register onto it.
   const router = new MainIpcRouter(ipcMain, log);
-  host.registerAll(router);
+  host.registerEnabled(router, enabledModules);
   registerShellHandlers(router, {
     store,
     config,
     apiKey,
     firstRun,
     host,
+    enabledModules,
     dataMode,
     dbKey,
     dbPath: paths.dbPath,
@@ -119,6 +127,7 @@ function bootSpine() {
   log.event('spine_ready', {
     modules: modules.length,
     functionalModules: modules.filter((m) => m.functional).length,
+    enabledModules: enabledModules.join(','), // module ids only; non-PHI
     dataMode: dataMode(),
   });
 
