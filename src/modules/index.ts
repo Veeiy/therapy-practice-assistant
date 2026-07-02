@@ -54,11 +54,15 @@ export function buildModules(deps: BuildModulesDeps): WorkflowModule[] {
   const cfg = deps.getConfig;
 
   // ── notes (workflow 1): the original functional workflow ──
+  // The default format for a new draft comes from provisioned config (custom
+  // buildout: the setup plugin writes notes.defaultFormat from the interview),
+  // sanitized so a bad value can only ever fall back to SOAP, never crash.
   const noteService = new NoteService({
     notes: deps.store.notes,
     audit: deps.store.audit,
     provider: deps.runtime.provider(),
     dataMode: deps.dataMode(),
+    defaultFormat: () => sanitizeNoteFormat(cfg()?.get('notes.defaultFormat')),
   });
 
   // ── intake (workflow 2): config-driven form + records + AI summary ──
@@ -88,6 +92,10 @@ export function buildModules(deps: BuildModulesDeps): WorkflowModule[] {
         cfg()?.get<string>('reminders.defaultTemplate') ?? DEFAULT_REMINDER_TEMPLATE,
       leadHours: () => cfg()?.get<number>('reminders.leadHours') ?? 24,
       practiceName: () => cfg()?.get<string>('app.productName') ?? 'Therapy Practice Assistant',
+      // custom buildout: provisioned appointment defaults, sanitized (below).
+      defaultModality: () => sanitizeModality(cfg()?.get('scheduling.defaultModality')),
+      defaultDurationMinutes: () =>
+        sanitizeDurationMinutes(cfg()?.get('scheduling.defaultDurationMinutes')),
     },
   });
 
@@ -105,6 +113,29 @@ export function buildModules(deps: BuildModulesDeps): WorkflowModule[] {
     createSchedulingModule({ service: schedulingService }),
     createBillingModule({ service: billingService }),
   ];
+}
+
+// ── provisioned-value sanitizers (custom buildout) ───────────────────────────
+// The setup plugin writes these config values, but config.json is plain JSON a
+// human can edit, so every provisioned value is narrowed to its legal domain at
+// READ time. A bad value falls back to the same baked default the config layer
+// seeds; it can never widen a type or crash a workflow. Exported for tests.
+
+/** notes.defaultFormat: one of the three known formats, else SOAP. */
+export function sanitizeNoteFormat(v: unknown): 'SOAP' | 'DAP' | 'BIRP' {
+  return v === 'SOAP' || v === 'DAP' || v === 'BIRP' ? v : 'SOAP';
+}
+
+/** scheduling.defaultModality: the domain Modality is strictly binary. Any other
+ * value (including a profile-level 'both' care setting, which is NOT a per
+ * appointment modality) falls back to 'telehealth', the seeded default. */
+export function sanitizeModality(v: unknown): 'in_person' | 'telehealth' {
+  return v === 'in_person' || v === 'telehealth' ? v : 'telehealth';
+}
+
+/** scheduling.defaultDurationMinutes: a sane whole number of minutes, else 50. */
+export function sanitizeDurationMinutes(v: unknown): number {
+  return typeof v === 'number' && Number.isInteger(v) && v >= 10 && v <= 240 ? v : 50;
 }
 
 /** Fallback reminder template, identical to the one seeded in APP_DEFAULT_CONFIG.

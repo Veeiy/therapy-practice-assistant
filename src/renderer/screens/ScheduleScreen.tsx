@@ -48,6 +48,20 @@ export function ScheduleScreen(): React.ReactElement {
     reload().catch((e) => setError(String(e)));
   }, [reload]);
 
+  // Custom buildout: start the modality picker on the practice's provisioned
+  // default (scheduling.defaultModality, written by the companion setup plugin).
+  // Only the two legal modalities are accepted; anything else leaves telehealth.
+  useEffect(() => {
+    window.api.config
+      .get('scheduling.defaultModality')
+      .then((v) => {
+        if (v === 'in_person' || v === 'telehealth') setModality(v);
+      })
+      .catch(() => {
+        /* config read is best-effort; the baked default stands */
+      });
+  }, []);
+
   const run = async (fn: () => Promise<void>) => {
     setBusy(true);
     setError(null);

@@ -32,7 +32,11 @@ export function createSchedulingModule(deps: SchedulingModuleDeps): WorkflowModu
     functional: true,
 
     defaultConfig: {
-      scheduling: { defaultDurationMinutes: 50, defaultModality: 'in_person' },
+      // Consumed via the service's SchedulingConfig getters (custom buildout);
+      // the setup plugin overrides both from the interview. The modality seed is
+      // 'telehealth' because that is the initial state the schedule form has
+      // always shown, so an un-provisioned install behaves exactly as before.
+      scheduling: { defaultDurationMinutes: 50, defaultModality: 'telehealth' },
     },
 
     registerIpc(router: IpcRouter): void {

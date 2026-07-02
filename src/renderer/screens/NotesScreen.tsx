@@ -56,6 +56,20 @@ export function NotesScreen(): React.ReactElement {
     reload().catch((e) => setError(String(e)));
   }, [reload]);
 
+  // Custom buildout: start the format picker on the practice's provisioned
+  // default (notes.defaultFormat, written by the companion setup plugin). Only a
+  // known format is accepted; anything else leaves the picker on SOAP.
+  useEffect(() => {
+    window.api.config
+      .get('notes.defaultFormat')
+      .then((v) => {
+        if (v === 'SOAP' || v === 'DAP' || v === 'BIRP') setFormat(v);
+      })
+      .catch(() => {
+        /* config read is best-effort; the baked default stands */
+      });
+  }, []);
+
   const open = async (id: string) => {
     setError(null);
     const v = await window.api.notes.get(id);

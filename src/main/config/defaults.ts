@@ -28,6 +28,10 @@ export const APP_DEFAULT_CONFIG: Record<string, unknown> = {
     // the available note formats (one-schema-three-configs). Editable: adding a
     // fourth format here makes it selectable with no code change.
     formats: NOTE_FORMATS,
+    // the format a new note starts on when none is chosen explicitly. The setup
+    // plugin overrides this from the interview answer (custom buildout); the
+    // baked default stays SOAP so un-provisioned installs behave as before.
+    defaultFormat: 'SOAP',
     // default signature label used when signing (the practitioner's display name).
     defaultSignedBy: 'Therapist',
   },
@@ -52,3 +56,16 @@ export const APP_DEFAULT_CONFIG: Record<string, unknown> = {
     currency: 'USD',
   },
 };
+
+/** Resolve the window title / practice display name from a raw config value
+ * (custom buildout: the setup plugin writes `app.productName`). Trimmed,
+ * length-capped, and falling back to the neutral product name on anything that
+ * is not a sensible non-empty string. Kept here (not in main/index.ts) so it is
+ * testable without Electron. */
+export function resolveProductName(raw: unknown): string {
+  const FALLBACK = 'Therapy Practice Assistant';
+  if (typeof raw !== 'string') return FALLBACK;
+  const name = raw.trim();
+  if (name.length === 0 || name.length > 80) return FALLBACK;
+  return name;
+}

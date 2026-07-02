@@ -30,6 +30,14 @@ export interface SchedulingConfig {
   reminderTemplate(): string;
   leadHours(): number;
   practiceName(): string;
+  /** the modality a new appointment gets when the caller omits one (custom
+   * buildout: backed by the provisioned `scheduling.defaultModality`).
+   * Optional so existing constructions keep working; absent means the
+   * repository's baked-in default applies. */
+  defaultModality?(): 'in_person' | 'telehealth';
+  /** the duration a new appointment gets when the caller omits one (custom
+   * buildout: backed by the provisioned `scheduling.defaultDurationMinutes`). */
+  defaultDurationMinutes?(): number;
 }
 
 export interface SchedulingServiceDeps {
@@ -60,11 +68,13 @@ export class SchedulingService {
   }
 
   create(args: CreateAppointmentArgs): Appointment {
+    // provisioned defaults fill anything the caller omitted; an explicit value
+    // always wins, and if no config getter exists the repository defaults apply.
     const appt = this.deps.appointments.create({
       client_id: args.client_id,
       starts_at: args.starts_at,
-      duration_minutes: args.duration_minutes,
-      modality: args.modality,
+      duration_minutes: args.duration_minutes ?? this.deps.config.defaultDurationMinutes?.(),
+      modality: args.modality ?? this.deps.config.defaultModality?.(),
       service_type: args.service_type ?? null,
       status: 'scheduled',
       demo: args.demo ?? 0,

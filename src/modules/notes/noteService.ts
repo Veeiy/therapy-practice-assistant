@@ -29,12 +29,17 @@ export interface NoteServiceDeps {
   /** resolve a format's section config; defaults to the built-in NOTE_FORMATS but
    * can be backed by the config store so formats are editable without a rebuild. */
   formatSections?: (format: NoteFormat) => FormatSection[];
+  /** the format a new draft starts on when the caller does not choose one
+   * (custom buildout: backed by the provisioned `notes.defaultFormat` config).
+   * Optional; absent means the baked-in SOAP default. */
+  defaultFormat?: () => NoteFormat;
 }
 
 export interface CreateDraftArgs {
   client_id: string;
   appointment_id?: string | null;
-  format: NoteFormat;
+  /** omitted means "use the practice's provisioned default format". */
+  format?: NoteFormat;
   date_of_service?: string | null;
   duration_minutes?: number | null;
   modality?: 'in_person' | 'telehealth' | null;
@@ -54,19 +59,21 @@ export class NoteService {
     return (this.deps.formatSections ?? ((f) => NOTE_FORMATS[f]))(format);
   }
 
-  /** Create a fresh DRAFT note with empty sections for the chosen format. */
+  /** Create a fresh DRAFT note with empty sections for the chosen format, or the
+   * practice's provisioned default format when none is chosen. */
   createDraft(args: CreateDraftArgs): Note {
+    const format = args.format ?? this.deps.defaultFormat?.() ?? 'SOAP';
     const note = this.deps.notes.create({
       client_id: args.client_id,
       appointment_id: args.appointment_id ?? null,
-      format: args.format,
-      sections: emptySectionsFor(args.format),
+      format,
+      sections: emptySectionsFor(format),
       date_of_service: args.date_of_service ?? null,
       duration_minutes: args.duration_minutes ?? null,
       modality: args.modality ?? null,
       demo: args.demo ?? 0,
     });
-    this.deps.audit.record('note_create_draft', 'note', note.id, `format=${args.format}`);
+    this.deps.audit.record('note_create_draft', 'note', note.id, `format=${format}`);
     return note;
   }
 

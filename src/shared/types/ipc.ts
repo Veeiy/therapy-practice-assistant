@@ -33,7 +33,8 @@ export interface IpcRouter {
 export interface CreateDraftNoteReq {
   client_id: string;
   appointment_id?: string | null;
-  format: 'SOAP' | 'DAP' | 'BIRP';
+  /** omitted means "use the provisioned notes.defaultFormat" (custom buildout). */
+  format?: 'SOAP' | 'DAP' | 'BIRP';
 }
 export interface RequestDraftReq {
   note_id: string;

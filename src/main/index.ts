@@ -31,7 +31,7 @@ import { loadOrCreateDbKey } from './data/keyManager.js';
 import { openDataStore } from './data/dataStore.js';
 import { seedSynthetic } from './data/seedSynthetic.js';
 import { ConfigStore } from './config/configStore.js';
-import { APP_DEFAULT_CONFIG } from './config/defaults.js';
+import { APP_DEFAULT_CONFIG, resolveProductName } from './config/defaults.js';
 import { ApiKeyStore } from './secure/apiKeyStore.js';
 import { AgentRuntime } from './agent/runtime.js';
 import { consoleLogger } from './agent/logger.js';
@@ -141,17 +141,22 @@ function bootSpine() {
     dataMode: dataMode(),
   });
 
-  return { store, dbKey, paths };
+  // Custom buildout: the window title honors the provisioned `app.productName`
+  // (the setup plugin writes the practice's own display name there; non-PHI, a
+  // business name). Sanitized; falls back to the neutral product name.
+  const productName = resolveProductName(config.get('app.productName'));
+
+  return { store, dbKey, paths, productName };
 }
 
-function createWindow(): void {
+function createWindow(title: string): void {
   const win = new BrowserWindow({
     width: 1200,
     height: 800,
     minWidth: 940,
     minHeight: 640,
     show: false,
-    title: 'Therapy Practice Assistant',
+    title,
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       // ── renderer lockdown ──
@@ -208,8 +213,9 @@ function applyContentSecurityPolicy(): void {
 }
 
 app.whenReady().then(() => {
+  let productName: string;
   try {
-    bootSpine();
+    productName = bootSpine().productName;
   } catch (e) {
     // Fail closed: if the spine cannot boot securely (e.g. no OS encryption), show
     // nothing rather than running degraded. Log a code, never PHI.
@@ -220,10 +226,10 @@ app.whenReady().then(() => {
     return;
   }
   applyContentSecurityPolicy();
-  createWindow();
+  createWindow(productName);
 
   app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow();
+    if (BrowserWindow.getAllWindows().length === 0) createWindow(productName);
   });
 });
 
