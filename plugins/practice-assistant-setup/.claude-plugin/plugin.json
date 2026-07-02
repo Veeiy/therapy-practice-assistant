@@ -1,0 +1,8 @@
+{
+  "name": "practice-assistant-setup",
+  "version": "0.1.0",
+  "description": "Plain-language setup interview for the practice assistant. Writes your Practice Profile, configures the practice app on your computer, and creates personal helper skills you describe in your own words.",
+  "author": {
+    "name": "Practice Assistant Project"
+  }
+}

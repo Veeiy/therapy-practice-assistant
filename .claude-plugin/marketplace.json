@@ -1,0 +1,14 @@
+{
+  "name": "practice-assistant-plugins",
+  "owner": {
+    "name": "Practice Assistant Project"
+  },
+  "plugins": [
+    {
+      "name": "practice-assistant-setup",
+      "displayName": "Practice Assistant Setup",
+      "source": "./plugins/practice-assistant-setup",
+      "description": "A friendly, plain-language setup interview for your practice assistant. It learns how you run your practice, sets up the practice app for you, and can create personal helper skills you describe in your own words."
+    }
+  ]
+}
