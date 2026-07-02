@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://schemas.privatepracticeos.app/practiceProfile.schema.json",
+  "title": "PracticeProfile",
+  "description": "Non-PHI practice setup metadata produced by onboarding and consumed by provisioning. No field is client PHI.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion", "createdAt", "practiceName", "practiceType", "careSetting",
+    "noteFormat", "billsInsurance", "weeklyVolume", "wantsIntake", "wantsScheduling",
+    "aiComfort", "privacyPosture", "provisioning"
+  ],
+  "properties": {
+    "schemaVersion": { "type": "integer", "minimum": 1, "default": 1 },
+    "createdAt":     { "type": "string", "description": "ISO 8601 timestamp; set on completion." },
+    "practiceName":  { "type": "string", "maxLength": 120, "description": "Non-PHI business name. Not a client name." },
+    "practiceType":  { "type": "string", "enum": ["individual", "couples", "family", "group", "mixed"], "default": "individual" },
+    "careSetting":   { "type": "string", "enum": ["in_person", "telehealth", "both"], "default": "both" },
+    "noteFormat":    { "type": "string", "enum": ["SOAP", "DAP", "BIRP"], "default": "DAP" },
+    "billsInsurance":{ "type": "string", "enum": ["insurance", "cash_pay", "both"], "default": "cash_pay" },
+    "weeklyVolume":  { "type": "string", "enum": ["low", "medium", "high"], "default": "medium" },
+    "wantsIntake":     { "type": "boolean", "default": true },
+    "wantsScheduling": { "type": "boolean", "default": true },
+    "aiComfort":     { "type": "string", "enum": ["keen", "cautious", "off_for_now"], "default": "off_for_now" },
+    "privacyPosture":{ "type": "string", "enum": ["maximum", "standard"], "default": "maximum" },
+    "provisioning": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["enabledModules", "appliedConfigs", "aiEnabled", "completedAt"],
+      "properties": {
+        "enabledModules": {
+          "type": "array",
+          "items": { "type": "string", "enum": ["notes", "intake", "scheduling", "billing"] },
+          "uniqueItems": true
+        },
+        "appliedConfigs": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
+        "aiEnabled": { "type": "boolean", "const": false, "description": "MUST be false. AI is never enabled by onboarding/provisioning." },
+        "completedAt": { "type": ["string", "null"] }
+      }
+    }
+  }
+}

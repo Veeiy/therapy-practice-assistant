@@ -10,6 +10,7 @@
 //   anthropic.key.sealed   the Anthropic API key, sealed by the OS keystore
 //   config.json            layered config overrides (non-PHI)
 //   firstrun.json          first-run acknowledgement flag (non-PHI)
+//   setupnotice.json       setup-notice dismissal flag (non-PHI)
 //   blobs/                 encrypted attachment blobs
 //
 // This module is tiny and dependency-light so tests can call buildPaths() with a
@@ -24,6 +25,7 @@ export interface AppPaths {
   sealedApiKeyPath: string;
   configPath: string;
   firstRunPath: string;
+  setupNoticePath: string;
   blobDir: string;
 }
 
@@ -36,6 +38,7 @@ export function buildPaths(userData: string): AppPaths {
     sealedApiKeyPath: join(userData, 'anthropic.key.sealed'),
     configPath: join(userData, 'config.json'),
     firstRunPath: join(userData, 'firstrun.json'),
+    setupNoticePath: join(userData, 'setupnotice.json'),
     blobDir: join(userData, 'blobs'),
   };
 }

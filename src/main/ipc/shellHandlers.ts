@@ -15,6 +15,7 @@ import type { IpcRouter } from '@shared/types/ipc.js';
 import type {
   ApiKeyStatus,
   SetApiKeyReq,
+  SetupStatus,
   BackupExportReq,
   BackupRestoreReq,
   BackupResult,
@@ -26,6 +27,8 @@ import type { DataStore } from '@main/data/dataStore.js';
 import type { ConfigStore } from '@main/config/configStore.js';
 import type { ApiKeyStore } from '@main/secure/apiKeyStore.js';
 import type { FirstRunStore } from '@main/firstRun.js';
+import type { SetupNoticeStore } from '@main/setupNotice.js';
+import type { PracticeProfileStore } from '@main/practiceProfileStore.js';
 import type { ModuleHost } from '@main/moduleHost.js';
 import { exportEncryptedBackup, restoreEncryptedBackup } from '@main/data/backupService.js';
 
@@ -34,6 +37,10 @@ export interface ShellHandlerDeps {
   config: ConfigStore;
   apiKey: ApiKeyStore;
   firstRun: FirstRunStore;
+  /** the Practice Profile reader (profile is written by the setup plugin). */
+  practiceProfile: PracticeProfileStore;
+  /** dismissal flag for the first-run setup notice. */
+  setupNotice: SetupNoticeStore;
   host: ModuleHost;
   /** the sanitized `app.enabledModules` allowlist resolved at boot (custom
    * buildout). The nav rail advertises only these; notes is always kept. */
@@ -54,6 +61,15 @@ export function registerShellHandlers(router: IpcRouter, deps: ShellHandlerDeps)
   router.handle(CHANNELS.firstRunStatus, () => deps.firstRun.status());
   router.handle(CHANNELS.firstRunAcknowledge, () => {
     deps.firstRun.acknowledge();
+  });
+
+  // ── custom-buildout setup status (never blocks; drives the notice banner) ──
+  router.handle(CHANNELS.setupStatus, (): SetupStatus => ({
+    profilePresent: deps.practiceProfile.isOnboarded(),
+    noticeDismissed: deps.setupNotice.status().dismissed,
+  }));
+  router.handle(CHANNELS.setupDismissNotice, () => {
+    deps.setupNotice.dismiss();
   });
 
   // ── config ──

@@ -79,6 +79,10 @@ export const CHANNELS = {
   // first run
   firstRunStatus: 'firstRun:status',
   firstRunAcknowledge: 'firstRun:acknowledge',
+  // custom-buildout setup (Practice Profile written by the companion plugin).
+  // NOTE: these are NOT interview channels; the interview lives in the plugin.
+  setupStatus: 'setup:status', // { profilePresent, noticeDismissed }
+  setupDismissNotice: 'setup:dismissNotice',
 } as const;
 
 /** Stable error codes the renderer can branch on without parsing prose. */

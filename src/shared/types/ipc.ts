@@ -164,6 +164,17 @@ export interface InvoiceDetail {
   disclaimer: string;
 }
 
+// ── custom-buildout setup status ──────────────────────────────────────────────
+/** Whether the companion setup plugin has provisioned this install yet, and
+ * whether the user dismissed the small first-run setup notice. The app never
+ * blocks on this; it only shows or hides the notice banner. */
+export interface SetupStatus {
+  /** true once a valid Practice Profile exists in config. */
+  profilePresent: boolean;
+  /** true once the user dismissed the setup notice. */
+  noticeDismissed: boolean;
+}
+
 // ── settings / secrets ────────────────────────────────────────────────────────
 export interface ApiKeyStatus {
   present: boolean;
@@ -244,6 +255,8 @@ export interface RendererApi {
     dataMode(): Promise<DataMode>;
     firstRunStatus(): Promise<{ acknowledged: boolean }>;
     firstRunAcknowledge(): Promise<void>;
+    setupStatus(): Promise<SetupStatus>;
+    setupDismissNotice(): Promise<void>;
   };
   config: {
     get(key: string): Promise<unknown>;

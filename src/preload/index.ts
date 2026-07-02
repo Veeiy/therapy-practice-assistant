@@ -88,6 +88,8 @@ const api: RendererApi = {
     dataMode: () => call(CHANNELS.dataModeGet),
     firstRunStatus: () => call(CHANNELS.firstRunStatus),
     firstRunAcknowledge: () => call(CHANNELS.firstRunAcknowledge),
+    setupStatus: () => call(CHANNELS.setupStatus),
+    setupDismissNotice: () => call(CHANNELS.setupDismissNotice),
   },
   config: {
     get: (key) => call(CHANNELS.configGet, { key }),

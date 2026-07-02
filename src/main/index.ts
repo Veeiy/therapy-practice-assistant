@@ -39,6 +39,8 @@ import { ModuleHost, resolveEnabledModules } from './moduleHost.js';
 import { MainIpcRouter } from './ipc/router.js';
 import { registerShellHandlers } from './ipc/shellHandlers.js';
 import { FirstRunStore } from './firstRun.js';
+import { SetupNoticeStore } from './setupNotice.js';
+import { PracticeProfileStore } from './practiceProfileStore.js';
 import { buildModules } from '../modules/index.js';
 import type { DataMode } from '../shared/constants.js';
 
@@ -101,6 +103,12 @@ function bootSpine() {
   // first-run disclaimer store (hard rule 3).
   const firstRun = new FirstRunStore(paths.firstRunPath);
 
+  // Custom buildout: the Practice Profile READER (the companion setup plugin is
+  // the writer; it provisions config.json, including the practiceProfile
+  // namespace) plus the dismissal flag for the first-run setup notice.
+  const practiceProfile = new PracticeProfileStore(config);
+  const setupNotice = new SetupNoticeStore(paths.setupNoticePath);
+
   // Custom buildout: the config-driven enablement allowlist. All modules are
   // still BUILT above (construction + config-defaults merge unchanged); only
   // hosting (IPC) and advertising (descriptors) are gated by this set. A missing
@@ -116,6 +124,8 @@ function bootSpine() {
     config,
     apiKey,
     firstRun,
+    practiceProfile,
+    setupNotice,
     host,
     enabledModules,
     dataMode,

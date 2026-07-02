@@ -77,10 +77,46 @@ body {
 }
 
 /* ── shell ── */
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
 .app {
   display: grid;
   grid-template-columns: 220px 1fr;
   height: 100%;
+}
+.app-shell > .app {
+  flex: 1;
+  min-height: 0;
+  height: auto;
+}
+
+/* ── first-run setup notice (non-blocking, dismissible banner) ── */
+.setup-notice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 16px;
+  background: var(--info-bg);
+  border-bottom: 1px solid var(--line);
+  font-size: 14px;
+  color: var(--ink);
+}
+.setup-notice-dismiss {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  border-radius: 8px;
+  padding: 6px 12px;
+  cursor: pointer;
+  color: var(--ink);
+  font-size: 13px;
+  white-space: nowrap;
+}
+.setup-notice-dismiss:hover {
+  background: #eef1f4;
 }
 .rail {
   background: var(--panel);
